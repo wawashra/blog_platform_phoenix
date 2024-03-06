@@ -11,19 +11,16 @@ defmodule BlogPlatformWeb.Auth.Plug.AssignUserToConnection do
   end
 
   def call(conn, _options) do
-    if conn.assigns[:user] do
+    with {:ok, _user} <- Map.fetch(conn.assigns, :user) do
       conn
     else
-      user_id = get_session(conn, :user_id)
-
-      if user_id == nil, do: raise(ErrorResponse.Unauthorized)
-
-      user = Users.get_user!(user_id)
-
-      cond do
-        user_id && user -> assign(conn, :user, user)
-        true -> assign(conn, :user, nil)
-      end
+      :error ->
+        case get_session(conn, :user_id) do
+          nil -> raise(ErrorResponse.Unauthorized)
+          user_id ->
+            user = Users.get_user!(user_id)
+            assign(conn, :user, user)
+        end
     end
   end
 end

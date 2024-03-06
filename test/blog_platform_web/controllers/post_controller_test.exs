@@ -47,7 +47,6 @@ defmodule BlogPlatformWeb.PostControllerTest do
 
     test "add post when data is invalid", %{conn: conn, user: user, user2: user2, token: token} do
       conn = Plug.Conn.put_req_header(conn, "authorization", token) |> Plug.Conn.assign(:user, user)
-
       post_to_create = %{
         body: "some body",
         title: "some title",
