@@ -7,7 +7,7 @@ import Config
 # Run `mix help test` for more information.
 config :blog_platform, BlogPlatform.Repo,
   username: "root",
-  password: "",
+  password: "root",
   hostname: "localhost",
   database: "blog_platform_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,

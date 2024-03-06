@@ -10,6 +10,16 @@ import Config
 config :blog_platform,
   ecto_repos: [BlogPlatform.Repo]
 
+config :blog_platform, BlogPlatformWeb.Auth.GuardianCore,
+  issuer: "blog_platform",
+  # for each env use a different key, you can generate it by apply mix guardian.gen.secret
+  secret_key: "HlY/VMrxDcAiuD5sXLc8ruoZysVBgeQVNYiioi+9MTg5Pnc/Lu20cVdd48me7Bm7"
+
+  config :hammer,
+  backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4,
+                                 cleanup_interval_ms: 60_000 * 10]}
+
+
 # Configures the endpoint
 config :blog_platform, BlogPlatformWeb.Endpoint,
   url: [host: "localhost"],
@@ -46,6 +56,8 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

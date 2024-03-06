@@ -1,5 +1,19 @@
 defmodule BlogPlatformWeb.Router do
   use BlogPlatformWeb, :router
+  use Plug.ErrorHandler
+
+  def handle_errors(conn, %{reason: %Phoenix.Router.NoRouteError{message: message}}) do
+    conn |> json(%{errors: message}) |> halt()
+  end
+
+  def handle_errors(conn, %{reason: %{message: message}}) do
+    conn |> json(%{errors: message}) |> halt()
+  end
+
+
+  def handle_errors(conn, _) do
+    conn |> json(%{errors: "Nothing Know "}) |> halt()
+  end
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -12,6 +26,12 @@ defmodule BlogPlatformWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+  end
+
+  pipeline :auth do
+    plug BlogPlatformWeb.Auth.Plug.AuthPipeline
+    plug BlogPlatformWeb.Auth.Plug.AssignUserToConnection
   end
 
   scope "/", BlogPlatformWeb do
@@ -20,6 +40,32 @@ defmodule BlogPlatformWeb.Router do
     get "/", PageController, :index
   end
 
+
+  scope "/api", BlogPlatformWeb do
+    pipe_through :api
+
+    post "/users/register", UserController, :new
+    post "/users/login", UserController, :login
+
+    get "/posts", PostController, :index
+    get "/posts/:id", PostController, :show
+
+    resources "/users", UserController, except: [:new, :edit]
+
+  end
+
+
+  scope "/api", BlogPlatformWeb do
+    pipe_through [:api, :auth]
+    # resources "/posts", PostController, except: [:new, :edit]
+    post "/posts", PostController, :create
+
+
+    put "/posts/:id", PostController, :update
+    patch "/posts/:id", PostController, :update
+    delete "/posts/:id", PostController, :delete
+
+  end
   # Other scopes may use custom stacks.
   # scope "/api", BlogPlatformWeb do
   #   pipe_through :api

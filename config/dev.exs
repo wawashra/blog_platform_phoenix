@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :blog_platform, BlogPlatform.Repo,
   username: "root",
-  password: "",
+  password: "root",
   hostname: "localhost",
   database: "blog_platform_dev",
   stacktrace: true,

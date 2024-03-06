@@ -16,6 +16,9 @@ defmodule BlogPlatformWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+  alias BlogPlatformWeb.Auth.GuardianCore
+
+  import BlogPlatform.UsersFixtures
 
   using do
     quote do
@@ -35,4 +38,28 @@ defmodule BlogPlatformWeb.ConnCase do
     BlogPlatform.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
+
+  def include_normal_user_token(%{conn: conn}) do
+    user = user_fixture()
+    user2 = user_fixture()
+
+    password = "blog_password"
+    {:ok, _, token} = GuardianCore.authenticate(user.email, password)
+    conn = Plug.Conn.put_req_header(conn, "authorization", token)
+    conn = Plug.Conn.assign(conn, :user, user)
+
+    {:ok, conn: conn, user: user, user2: user2, password: password, token: "Bearer " <> token}
+  end
+
+
+
+  def include_admin_token(%{conn: conn}) do
+    user = admin_fixture()
+    password = "blog_password"
+    {:ok, _, token} = GuardianCore.authenticate(user.email, password)
+    conn = Plug.Conn.put_req_header(conn, "authorization", "Bearer " <> token)
+    conn = Plug.Conn.assign(conn, :user, user)
+    {:ok, conn: conn, user: user, password: password, token: "Bearer " <> token}
+  end
+
 end
