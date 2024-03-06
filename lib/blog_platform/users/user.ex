@@ -8,7 +8,7 @@ defmodule BlogPlatform.Users.User do
   @fields ~w/role/a
   @required_fields ~w/first_name last_name user_name password password_confirmation email/a
   @role_values ~w/USER ADMIN/a
-  @allowed_role_values ~w/USER/a
+  @allowed_role_values ~w/USER ADMIN/a
 
   schema "users" do
     field :first_name, :string

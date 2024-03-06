@@ -11,7 +11,7 @@ defmodule BlogPlatformWeb.Plug.AuthorizedPost do
     case Map.fetch(new_post, "user_id") do
       {:ok, user_id} ->
         cond do
-          (conn.assigns.user.id == user_id and conn.assigns.user.role == @user_type)
+          (conn.assigns.user.id == user_id and (conn.assigns.user.role == @user_type or conn.assigns.user.role == @admin_type))
           or
           (conn.assigns.user.id != user_id and conn.assigns.user.role == @admin_type) ->
             conn
@@ -46,7 +46,7 @@ defmodule BlogPlatformWeb.Plug.AuthorizedPost do
     case Map.fetch(post, "user_id") do
       {:ok, user_id} ->
         cond do
-          (conn.assigns.user.id == user_id and conn.assigns.user.role == @user_type)
+          (conn.assigns.user.id == user_id and (conn.assigns.user.role == @user_type or conn.assigns.user.role == @admin_type))
           or
           (conn.assigns.user.id != user_id and conn.assigns.user.role == @admin_type) ->
             conn

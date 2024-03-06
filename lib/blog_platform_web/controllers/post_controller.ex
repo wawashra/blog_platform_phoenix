@@ -14,7 +14,7 @@ defmodule BlogPlatformWeb.PostController do
 
 
   plug Hammer.Plug, [
-    rate_limit: {"act_with_apis", 60_000, 5},
+    rate_limit: {"act_with_apis", 60_000, 20},
     by: {:session, :ip}
   ] when action in [:index, :create, :show, :delete]
 
