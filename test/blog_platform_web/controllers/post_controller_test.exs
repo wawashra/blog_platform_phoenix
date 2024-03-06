@@ -3,13 +3,7 @@ defmodule BlogPlatformWeb.PostControllerTest do
 
   import BlogPlatform.PostsFixtures
 
-  alias BlogPlatform.Posts.Post
   alias BlogPlatformWeb.Auth.GuardianCore
-
-  setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
-  end
-
 
   describe "post for normal user" do
     setup :include_normal_user_token
@@ -26,8 +20,11 @@ defmodule BlogPlatformWeb.PostControllerTest do
     end
 
 
-    test "add post when data is valid", %{conn: conn, user: user, token: token} do
-      conn = Plug.Conn.put_req_header(conn, "authorization", token)
+    test "add post when data is valid", %{conn: conn, user: user, user2: _user2, token: token} do
+
+
+
+      conn = Plug.Conn.put_req_header(conn, "authorization", token) |> Plug.Conn.assign(:user, user)
 
       post_to_create = %{
         body: "some body",
@@ -35,20 +32,21 @@ defmodule BlogPlatformWeb.PostControllerTest do
         user_id: user.id
       }
 
-      conn = post(conn, Routes.post_path(conn, :create), post: post_to_create)
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      conn_results_for_post_ops = post(conn, Routes.post_path(conn, :create), post: post_to_create)
 
-      conn = get(conn, Routes.post_path(conn, :show, id))
+      assert %{"id" => id} = json_response(conn_results_for_post_ops, 201)["data"]
+
+      conn_results_for_get_ops = get(conn, Routes.post_path(conn, :show, id))
 
       assert %{
                "id" => ^id,
                "body" => "some body",
                "title" => "some title"
-             } = json_response(conn, 200)["data"]
+             } = json_response(conn_results_for_get_ops, 200)["data"]
     end
 
     test "add post when data is invalid", %{conn: conn, user: user, user2: user2, token: token} do
-      conn = Plug.Conn.put_req_header(conn, "authorization", token)
+      conn = Plug.Conn.put_req_header(conn, "authorization", token) |> Plug.Conn.assign(:user, user)
 
       post_to_create = %{
         body: "some body",
@@ -57,7 +55,7 @@ defmodule BlogPlatformWeb.PostControllerTest do
       }
 
       assert_error_sent 403, fn ->
-        conn = post(conn, Routes.post_path(conn, :create), post: post_to_create)
+        post(conn, Routes.post_path(conn, :create), post: post_to_create)
       end
 
 
@@ -65,7 +63,7 @@ defmodule BlogPlatformWeb.PostControllerTest do
 
     test "update post when data is valid", %{conn: conn, user: user, token: token} do
 
-      conn = Plug.Conn.put_req_header(conn, "authorization", token)
+      conn = Plug.Conn.put_req_header(conn, "authorization", token) |> Plug.Conn.assign(:user, user)
 
       post = create_post(user.id)
 
@@ -76,16 +74,17 @@ defmodule BlogPlatformWeb.PostControllerTest do
         "title" => "some updated title"
       }
 
-      conn = put(conn, Routes.post_path(conn, :update, post.post), post: post_to_update)
-      assert %{"id" => p_id} = json_response(conn, 200)["data"]
+      conn_results_for_put_ops = put(conn, Routes.post_path(conn, :update, post.post), post: post_to_update)
 
-      conn = get(conn, Routes.post_path(conn, :show, p_id))
+      assert %{"id" => p_id} = json_response(conn_results_for_put_ops, 200)["data"]
+
+      conn_results_for_get_ops = get(conn, Routes.post_path(conn, :show, p_id))
 
       assert %{
                "id" => ^p_id,
                "body" => "some updated body",
                "title" => "some updated title"
-             } = json_response(conn, 200)["data"]
+             } = json_response(conn_results_for_get_ops, 200)["data"]
 
     end
 
@@ -101,12 +100,12 @@ defmodule BlogPlatformWeb.PostControllerTest do
 
     test "delete post when data is invalid", %{conn: conn, user: user, user2: user2, token: token} do
 
-      conn = Plug.Conn.put_req_header(conn, "authorization", token)
+      conn = Plug.Conn.put_req_header(conn, "authorization", token) |> Plug.Conn.assign(:user, user)
 
       post = create_post(user2.id)
 
       assert_error_sent 403, fn ->
-        conn = delete(conn, Routes.post_path(conn, :delete, post.post))
+        delete(conn, Routes.post_path(conn, :delete, post.post))
       end
     end
   end

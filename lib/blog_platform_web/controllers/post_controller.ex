@@ -26,11 +26,6 @@ defmodule BlogPlatformWeb.PostController do
   end
 
   def create(conn, %{"post" => post_params}) do
-
-
-    # IO.inspect(post_params)
-
-
     with {:ok, %Post{} = post} <- Posts.create_post(if !Map.has_key?(post_params, "user_id") do Map.put(post_params, "user_id", conn.assigns.user.id) else post_params end) do
       conn
       |> put_status(:created)

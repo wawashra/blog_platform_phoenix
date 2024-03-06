@@ -44,9 +44,11 @@ defmodule BlogPlatformWeb.ConnCase do
     user2 = user_fixture()
 
     password = "blog_password"
-    {:ok, _, token} = GuardianCore.authenticate(user.email, password)
+    {:ok, user_after_login, token} = GuardianCore.authenticate(user.email, password)
+
     conn = Plug.Conn.put_req_header(conn, "authorization", token)
-    conn = Plug.Conn.assign(conn, :user, user)
+    |> Plug.Conn.assign(:user, user_after_login)
+
 
     {:ok, conn: conn, user: user, user2: user2, password: password, token: "Bearer " <> token}
   end

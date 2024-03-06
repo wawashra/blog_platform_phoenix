@@ -31,7 +31,6 @@ defmodule BlogPlatformWeb.Router do
 
   pipeline :auth do
     plug BlogPlatformWeb.Auth.Plug.AuthPipeline
-    plug BlogPlatformWeb.Auth.Plug.AssignUserToConnection
   end
 
   scope "/", BlogPlatformWeb do
@@ -47,9 +46,6 @@ defmodule BlogPlatformWeb.Router do
     post "/users/register", UserController, :new
     post "/users/login", UserController, :login
 
-    get "/posts", PostController, :index
-    get "/posts/:id", PostController, :show
-
     resources "/users", UserController, except: [:new, :edit]
 
   end
@@ -60,6 +56,8 @@ defmodule BlogPlatformWeb.Router do
     # resources "/posts", PostController, except: [:new, :edit]
     post "/posts", PostController, :create
 
+    get "/posts", PostController, :index
+    get "/posts/:id", PostController, :show
 
     put "/posts/:id", PostController, :update
     patch "/posts/:id", PostController, :update

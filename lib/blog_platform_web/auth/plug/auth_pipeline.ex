@@ -8,5 +8,6 @@ defmodule BlogPlatformWeb.Auth.Plug.AuthPipeline do
   plug Guardian.Plug.VerifyHeader
   plug Guardian.Plug.EnsureAuthenticated
   plug Guardian.Plug.LoadResource
+  plug BlogPlatformWeb.Auth.Plug.AssignUserToConnection
 
 end
