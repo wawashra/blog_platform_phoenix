@@ -11,19 +11,13 @@ defmodule BlogPlatformWeb.Auth.Plug.AssignUserToConnection do
   end
 
   def call(conn, _options) do
-    if conn.assigns[:user] do
-      conn
-    else
-      user_id = get_session(conn, :user_id)
 
-      if user_id == nil, do: raise(ErrorResponse.Unauthorized)
-
-      user = Users.get_user!(user_id)
-
-      cond do
-        user_id && user -> assign(conn, :user, user)
-        true -> assign(conn, :user, nil)
-      end
+    case Guardian.Plug.current_resource(conn) do
+      nil -> raise(ErrorResponse.Unauthorized)
+      current_user ->
+        user = Users.get_user!(current_user.id)
+        assign(conn, :user, user)
     end
+
   end
 end

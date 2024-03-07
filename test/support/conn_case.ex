@@ -44,10 +44,7 @@ defmodule BlogPlatformWeb.ConnCase do
     user2 = user_fixture()
 
     password = "blog_password"
-    {:ok, user_after_login, token} = GuardianCore.authenticate(user.email, password)
-
-    conn = Plug.Conn.put_req_header(conn, "authorization", token)
-    |> Plug.Conn.assign(:user, user_after_login)
+    {:ok, _user_after_login, token} = GuardianCore.authenticate(user.email, password)
 
 
     {:ok, conn: conn, user: user, user2: user2, password: password, token: "Bearer " <> token}
@@ -55,13 +52,15 @@ defmodule BlogPlatformWeb.ConnCase do
 
 
 
+
   def include_admin_token(%{conn: conn}) do
     user = admin_fixture()
+
+    normal_user = user_fixture()
     password = "blog_password"
     {:ok, _, token} = GuardianCore.authenticate(user.email, password)
-    conn = Plug.Conn.put_req_header(conn, "authorization", "Bearer " <> token)
-    conn = Plug.Conn.assign(conn, :user, user)
-    {:ok, conn: conn, user: user, password: password, token: "Bearer " <> token}
+
+    {:ok, conn: conn, user: user, normal_user: normal_user, password: password, token: "Bearer " <> token}
   end
 
 end
