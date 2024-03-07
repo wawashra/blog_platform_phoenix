@@ -11,16 +11,13 @@ defmodule BlogPlatformWeb.Auth.Plug.AssignUserToConnection do
   end
 
   def call(conn, _options) do
-    with {:ok, _user} <- Map.fetch(conn.assigns, :user) do
-      conn
-    else
-      :error ->
-        case get_session(conn, :user_id) do
-          nil -> raise(ErrorResponse.Unauthorized)
-          user_id ->
-            user = Users.get_user!(user_id)
-            assign(conn, :user, user)
-        end
+
+    case Guardian.Plug.current_resource(conn) do
+      nil -> raise(ErrorResponse.Unauthorized)
+      current_user ->
+        user = Users.get_user!(current_user.id)
+        assign(conn, :user, user)
     end
+
   end
 end
