@@ -40,6 +40,19 @@ defmodule BlogPlatformWeb.UserController do
     end
   end
 
+
+  def logout(conn, %{}) do
+    user = conn.assigns[:user]
+
+    token = Guardian.Plug.current_token(conn)
+    GuardianCore.revoke(token)
+
+    conn
+    |> Plug.Conn.clear_session()
+    |> put_status(:ok)
+    |> render("user_token.json", %{user: user, token: token})
+  end
+
   def create(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Users.create_user(user_params) do
       conn

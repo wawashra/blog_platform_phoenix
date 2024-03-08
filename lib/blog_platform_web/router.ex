@@ -41,17 +41,6 @@ defmodule BlogPlatformWeb.Router do
 
 
   scope "/api", BlogPlatformWeb do
-    pipe_through :api
-
-    post "/users/register", UserController, :new
-    post "/users/login", UserController, :login
-
-    resources "/users", UserController, except: [:new, :edit]
-
-  end
-
-
-  scope "/api", BlogPlatformWeb do
     pipe_through [:api, :auth]
     # resources "/posts", PostController, except: [:new, :edit]
     post "/posts", PostController, :create
@@ -59,9 +48,21 @@ defmodule BlogPlatformWeb.Router do
     get "/posts", PostController, :index
     get "/posts/:id", PostController, :show
 
+    get "/users/logout", UserController, :logout
+
     put "/posts/:id", PostController, :update
     patch "/posts/:id", PostController, :update
     delete "/posts/:id", PostController, :delete
+
+  end
+
+  scope "/api", BlogPlatformWeb do
+    pipe_through :api
+
+    post "/users/register", UserController, :new
+    post "/users/login", UserController, :login
+
+    resources "/users", UserController, except: [:new, :edit]
 
   end
   # Other scopes may use custom stacks.
