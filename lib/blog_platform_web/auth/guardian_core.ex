@@ -39,7 +39,7 @@ defmodule BlogPlatformWeb.Auth.GuardianCore do
   end
 
   defp create_token(user) do
-    {:ok, token, _claims} = encode_and_sign(user)
+    {:ok, token, _claims} = encode_and_sign(user, %{}, [ttl: {45, :minute}])
     {:ok, user, token}
   end
 
@@ -60,4 +60,11 @@ defmodule BlogPlatformWeb.Auth.GuardianCore do
       {:ok, claims}
     end
   end
+
+  def on_refresh({old_token, old_claims}, {new_token, new_claims}, _options) do
+    with {:ok, _, _} <- Guardian.DB.on_refresh({old_token, old_claims}, {new_token, new_claims}) do
+      {:ok, {old_token, old_claims}, {new_token, new_claims}}
+    end
+  end
+
 end

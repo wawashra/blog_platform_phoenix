@@ -49,6 +49,7 @@ defmodule BlogPlatformWeb.Router do
     get "/posts/:id", PostController, :show
 
     get "/users/logout", UserController, :logout
+    get "/users/refresh", UserController, :refresh_token
 
     put "/posts/:id", PostController, :update
     patch "/posts/:id", PostController, :update

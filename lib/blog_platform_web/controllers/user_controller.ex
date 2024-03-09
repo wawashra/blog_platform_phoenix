@@ -4,11 +4,14 @@ defmodule BlogPlatformWeb.UserController do
 
   alias BlogPlatform.Users
   alias BlogPlatform.Users.User
+  alias BlogPlatformWeb.Auth.ErrorResponse
 
-  plug Hammer.Plug, [
-    rate_limit: {"act_with_apis", 60_000, 5},
-    by: {:session, :ip}
-  ] when action in [:index, :create, :show, :delete]
+  plug Hammer.Plug,
+       [
+         rate_limit: {"act_with_apis", 60_000, 5},
+         by: {:session, :ip}
+       ]
+       when action in [:index, :create, :show, :delete]
 
   action_fallback BlogPlatformWeb.FallbackController
 
@@ -17,16 +20,14 @@ defmodule BlogPlatformWeb.UserController do
     render(conn, "index.json", users: users)
   end
 
-
   def new(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Users.create_user(user_params),
-          {:ok, token, _claims} <- GuardianCore.encode_and_sign(user) do
+         {:ok, token, _claims} <- GuardianCore.encode_and_sign(user) do
       conn
       |> put_status(:created)
       |> render("user_token.json", %{user: user, token: token})
     end
   end
-
 
   def login(conn, %{"email" => email, "password" => password}) do
     case GuardianCore.authenticate(email, password) do
@@ -35,11 +36,29 @@ defmodule BlogPlatformWeb.UserController do
         |> Plug.Conn.put_session(:user_id, user.id)
         |> put_status(:ok)
         |> render("user_token.json", %{user: user, token: token})
+
       {:error, :unauthorized} ->
-        raise BlogPlatformWeb.Auth.ErrorResponse.Unauthorized, message: "Email Or Password incorrect"
+        raise ErrorResponse.Unauthorized, message: "Email Or Password incorrect"
     end
   end
 
+  def refresh_token(conn, %{}) do
+    with current_token <- Guardian.Plug.current_token(conn),
+         {:ok, claims} <- GuardianCore.decode_and_verify(current_token),
+         {:ok, user} <- GuardianCore.resource_from_claims(claims) do
+
+      {:ok, _old, {new_token, _new_claims}} = GuardianCore.refresh(current_token)
+      GuardianCore.revoke(current_token)
+
+      conn
+      |> Plug.Conn.put_session(:user_id, user.id)
+      |> put_status(:ok)
+      |> render("user_token.json", %{user: user, token: new_token})
+    else
+      {:error, _reason} ->
+        raise ErrorResponse.InvalidToken
+    end
+  end
 
   def logout(conn, %{}) do
     user = conn.assigns[:user]
